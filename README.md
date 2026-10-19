@@ -8,26 +8,28 @@
 - URL web producción: http://localhost:8080
 - URL pgAdmin (Base de datos): http://localhost:5050
 
-## Apagado
+### Apagado
 1. Docker compose down
 
-## Borrado
+### Borrado
 docker compose down -v
 
 ### Makefile
 He creado un archivo makefile que me facilita la ejecución de los comandos:
 
-Comando	Qué hace
-make / make help |	Lista los atajos disponibles
-make up	         |  Construye y levanta todos los contenedores (up -d --build)
-make down	     |  Para y elimina los contenedores (los volúmenes se conservan)
-make logs	     |  Logs en vivo. Para un solo servicio: make logs SERVICE=php
-make shell	     |  Abre una terminal sh dentro del contenedor php
-make migrate	 |  Ejecuta las migraciones (php artisan migrate)
-make test	     |  Tests del backend (composer test). Usan SQLite en memoria, no tocan la BD de desarrollo
-make lint	     |  Comprueba el estilo del backend con Pint, sin modificar archivos
-make lint-fix	 |  Corrige el estilo del backend con Pint
-...
+| Comando | Qué hace |
+|---|---|
+| `make` / `make help` | Lista los atajos disponibles |
+| `make up` | Construye y levanta todos los contenedores (`up -d --build`) |
+| `make down` | Para y elimina los contenedores (los volúmenes se conservan) |
+| `make logs` | Logs en vivo. Para un solo servicio: `make logs SERVICE=php` |
+| `make shell` | Abre una terminal `sh` dentro del contenedor `php` |
+| `make migrate` | Ejecuta las migraciones (`php artisan migrate`) |
+| `make test` | Tests del backend (`composer test`). Usan SQLite en memoria, no tocan la BD de desarrollo |
+| `make lint` | Comprueba el estilo del backend con Pint, sin modificar archivos |
+| `make lint-fix` | Corrige el estilo del backend con Pint |
+| `make composer ARGS="..."` | Ejecuta Composer en el contenedor `php`. Ej: `make composer ARGS="require vendor/paquete"` |
+| `make npm ARGS="..."` | Ejecuta npm en el contenedor `vite` (frontend). Ej: `make npm ARGS="install axios"` |
 
 ## STACK TECH
 Backend → Laravel
