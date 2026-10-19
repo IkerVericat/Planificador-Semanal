@@ -5,9 +5,25 @@ services:
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
+      SANCTUM_STATEFUL_DOMAINS: localhost:5173,localhost:8080
     volumes:
       - ./backend:/var/www/html
       - vendor_data:/var/www/html/vendor
 
+  vite:
+    image: node:24-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_PROXY_TARGET: http://nginx
+    ports:
+      - "127.0.0.1:5173:5173"
+    volumes:
+      - ./frontend:/app
+      - node_modules_data:/app/node_modules
+    depends_on:
+      - nginx
+
 volumes:
   vendor_data:
+  node_modules_data:
