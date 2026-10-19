@@ -1,0 +1,7 @@
+services:
+  php:
+    build:
+      target: dev
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
