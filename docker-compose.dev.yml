@@ -10,6 +10,18 @@ services:
       - ./backend:/var/www/html
       - vendor_data:/var/www/html/vendor
 
+  # En dev se usa queue:listen (recarga el código en cada job); queue:work lo mantendría en memoria
+  queue:
+    build:
+      target: dev
+    command: php artisan queue:listen --tries=1
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+    volumes:
+      - ./backend:/var/www/html
+      - vendor_data:/var/www/html/vendor
+
   vite:
     image: node:24-alpine
     working_dir: /app

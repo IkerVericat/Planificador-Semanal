@@ -1,3 +1,22 @@
+# Variables de entorno compartidas por los contenedores PHP (php y queue)
+x-php-environment: &php-environment
+  APP_NAME: Planificador
+  APP_ENV: ${APP_ENV:-production}
+  APP_KEY: ${APP_KEY:?Define APP_KEY en .env}
+  APP_DEBUG: ${APP_DEBUG:-false}
+  APP_URL: ${APP_URL:-http://localhost:8080}
+  LOG_CHANNEL: stderr
+  DB_CONNECTION: pgsql
+  DB_HOST: db
+  DB_PORT: 5432
+  DB_DATABASE: ${DB_DATABASE:-planificador}
+  DB_USERNAME: ${DB_USERNAME:-planificador}
+  DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+  SESSION_DRIVER: database
+  CACHE_STORE: database
+  QUEUE_CONNECTION: database
+  SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:8080}
+
 services:
   nginx:
     build:
@@ -13,23 +32,20 @@ services:
     build:
       context: ./backend
     environment:
-      APP_NAME: Planificador
-      APP_ENV: ${APP_ENV:-production}
-      APP_KEY: ${APP_KEY:?Define APP_KEY en .env}
-      APP_DEBUG: ${APP_DEBUG:-false}
-      APP_URL: ${APP_URL:-http://localhost:8080}
-      LOG_CHANNEL: stderr
-      DB_CONNECTION: pgsql
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE:-planificador}
-      DB_USERNAME: ${DB_USERNAME:-planificador}
-      DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
-      SESSION_DRIVER: database
-      CACHE_STORE: database
-      QUEUE_CONNECTION: database
-      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:8080}
+      <<: *php-environment
       RUN_MIGRATIONS: "true"
+    volumes:
+      - storage_data:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  queue:
+    build:
+      context: ./backend
+    environment: *php-environment
+    command: php artisan queue:work --tries=3 --sleep=3 --max-time=3600
     volumes:
       - storage_data:/var/www/html/storage
     depends_on:
