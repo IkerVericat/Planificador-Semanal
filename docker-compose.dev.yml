@@ -22,6 +22,11 @@ services:
       - ./backend:/var/www/html
       - vendor_data:/var/www/html/vendor
 
+  # Crea la BD de tests (planificador_test) la primera vez que se inicializa el volumen
+  db:
+    volumes:
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+
   vite:
     image: node:24-alpine
     working_dir: /app

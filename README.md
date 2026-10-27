@@ -25,7 +25,9 @@ He creado un archivo makefile que me facilita la ejecución de los comandos:
 | `make logs` | Logs en vivo. Para un solo servicio: `make logs SERVICE=php` |
 | `make shell` | Abre una terminal `sh` dentro del contenedor `php` |
 | `make migrate` | Ejecuta las migraciones (`php artisan migrate`) |
-| `make test` | Tests del backend (`composer test`). Usan SQLite en memoria, no tocan la BD de desarrollo |
+| `make seed` | Borra la BD de desarrollo y la recrea con datos de prueba (`demo@example.com` / `password`) |
+| `make test` | Tests del backend (`composer test`) contra la BD `planificador_test` de PostgreSQL; no tocan la de desarrollo |
+| `make test-db` | Crea la BD `planificador_test` si tu volumen de Postgres es anterior a `docker/db/init` |
 | `make lint` | Comprueba el estilo del backend con Pint, sin modificar archivos |
 | `make lint-fix` | Corrige el estilo del backend con Pint |
 | `make composer ARGS="..."` | Ejecuta Composer en el contenedor `php`. Ej: `make composer ARGS="require vendor/paquete"` |

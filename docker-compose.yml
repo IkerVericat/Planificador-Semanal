@@ -12,7 +12,10 @@ x-php-environment: &php-environment
   DB_DATABASE: ${DB_DATABASE:-planificador}
   DB_USERNAME: ${DB_USERNAME:-planificador}
   DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
-  SESSION_DRIVER: database
+  APP_LOCALE: es
+  FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+  # La API no usa sesiones: se autentica con tokens de Sanctum
+  SESSION_DRIVER: array
   CACHE_STORE: database
   QUEUE_CONNECTION: database
   SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:8080}

@@ -6,7 +6,7 @@ PHP     := $(COMPOSE) exec php
 ARGS    ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help up down logs shell migrate test lint lint-fix composer npm
+.PHONY: help up down logs shell migrate seed test test-db lint lint-fix composer npm
 
 help: ## Muestra esta ayuda
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-10s %s\n", $$1, $$2}'
@@ -26,8 +26,14 @@ shell: ## Terminal dentro del contenedor PHP
 migrate: ## Ejecuta las migraciones de Laravel
 	$(PHP) php artisan migrate
 
-test: ## Tests del backend (usan SQLite en memoria, no tocan la BD de desarrollo)
+seed: ## Borra la BD de desarrollo y la recrea con el usuario demo@example.com / password
+	$(PHP) php artisan migrate:fresh --seed
+
+test: ## Tests del backend (BD planificador_test en PostgreSQL; no tocan la de desarrollo)
 	$(PHP) composer test
+
+test-db: ## Crea la BD planificador_test si no existe (volúmenes creados antes de docker/db/init)
+	$(COMPOSE) exec db sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -tc "SELECT 1 FROM pg_database WHERE datname = '"'"'planificador_test'"'"'" | grep -q 1 || psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "CREATE DATABASE planificador_test"'
 
 lint: ## Comprueba el estilo del backend con Pint (no modifica archivos)
 	$(PHP) vendor/bin/pint --test
