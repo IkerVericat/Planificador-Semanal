@@ -102,11 +102,54 @@ watch(
   { immediate: true },
 )
 
+const ALL_WEEKDAYS: IsoWeekday[] = [1, 2, 3, 4, 5, 6, 7]
+
+/** Días marcados en los botones L M X J V S D: los de "Cada semana", todos en "Cada día" y ninguno si no se repite */
+const selectedDays = computed<IsoWeekday[]>(() => {
+  if (form.recurrence === 'weekly') return form.recurrence_days
+  if (form.recurrence === 'daily') return ALL_WEEKDAYS
+  return []
+})
+
+/** Los botones de días solo tienen sentido sin repetición, cada día o cada semana */
+const showWeekdays = computed(() => ['none', 'daily', 'weekly'].includes(form.recurrence))
+
+/**
+ * Marcar días convierte la tarea en semanal en esos días; sin ninguno deja de repetirse
+ * y con los 7 pasa a "Cada día".
+ */
 function toggleWeekday(day: IsoWeekday): void {
-  form.recurrence_days = form.recurrence_days.includes(day)
-    ? form.recurrence_days.filter((d) => d !== day)
-    : [...form.recurrence_days, day].sort()
+  const days = selectedDays.value.includes(day)
+    ? selectedDays.value.filter((d) => d !== day)
+    : [...selectedDays.value, day].sort()
+
+  if (days.length === 0) {
+    form.recurrence = 'none'
+  } else if (days.length === ALL_WEEKDAYS.length) {
+    form.recurrence = 'daily'
+  } else {
+    form.recurrence = 'weekly'
+    form.recurrence_days = days
+  }
 }
+
+// Al elegir "Cada semana" en el desplegable sin días marcados, se marca el de la fecha de la tarea
+watch(
+  () => form.recurrence,
+  (recurrence) => {
+    if (recurrence === 'weekly' && form.recurrence_days.length === 0 && form.task_date) {
+      form.recurrence_days = [isoWeekday(fromISODate(form.task_date))]
+    }
+  },
+)
+
+const repeatSummary = computed(() => {
+  if (form.recurrence === 'daily') return 'Se repite todos los días.'
+  if (form.recurrence !== 'weekly') return 'Toca los días en los que se repite cada semana.'
+  const names = form.recurrence_days.map((day) => WEEKDAY_NAMES[day - 1])
+  const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}` : names[0]
+  return `Se repite cada ${list}.`
+})
 
 function payload(): TaskPayload {
   const repeats = form.recurrence !== 'none'
@@ -277,22 +320,27 @@ function remove(): Promise<void> {
       </select>
     </div>
 
-    <fieldset v-if="form.recurrence === 'weekly'">
-      <legend class="label">Días</legend>
+    <fieldset v-if="showWeekdays" aria-describedby="task-repeat-summary">
+      <legend class="label">Días de la semana</legend>
       <div class="flex justify-between gap-1">
         <button
           v-for="(initial, index) in WEEKDAY_INITIALS"
           :key="initial"
           type="button"
           class="flex size-11 items-center justify-center rounded-full text-sm font-semibold transition"
-          :class="form.recurrence_days.includes((index + 1) as IsoWeekday) ? 'bg-primary text-white' : 'bg-surface text-muted'"
-          :aria-pressed="form.recurrence_days.includes((index + 1) as IsoWeekday)"
+          :class="
+            selectedDays.includes((index + 1) as IsoWeekday)
+              ? 'bg-primary text-white'
+              : 'bg-surface text-muted hover:bg-primary-soft hover:text-primary'
+          "
+          :aria-pressed="selectedDays.includes((index + 1) as IsoWeekday)"
           :aria-label="WEEKDAY_NAMES[index]"
           @click="toggleWeekday((index + 1) as IsoWeekday)"
         >
           {{ initial }}
         </button>
       </div>
+      <p id="task-repeat-summary" class="mt-1.5 text-sm text-muted" aria-live="polite">{{ repeatSummary }}</p>
       <p v-if="fieldError('recurrence_days')" class="field-error">{{ fieldError('recurrence_days') }}</p>
     </fieldset>
 
