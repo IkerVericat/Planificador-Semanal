@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Las respuestas devuelven el recurso tal cual, sin envolverlo en { "data": ... }
+        JsonResource::withoutWrapping();
+
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)
+            ->by(mb_strtolower((string) $request->input('email')).'|'.$request->ip()));
+
+        RateLimiter::for('register', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
+
+        RateLimiter::for('password', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
     }
 }

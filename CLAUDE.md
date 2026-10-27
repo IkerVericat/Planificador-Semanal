@@ -54,29 +54,31 @@ Antes de construir una pantalla, **abre y mira `docs/mockup.png`**. Antes de toc
 ## Contrato de la API (borrador, mantenlo actualizado aquí)
 
 Todas las rutas devuelven JSON; las protegidas requieren `Authorization: Bearer <token>`.
+Los recursos se devuelven **sin envolver** en `data` (`GET /api/categories` → `[ … ]`). Fechas `YYYY-MM-DD`, horas `HH:mm`.
 
 | Método y ruta | Descripción |
 |---|---|
-| `POST /api/auth/register` | Crea usuario y devuelve `{ user, token }` |
-| `POST /api/auth/login` | Devuelve `{ user, token }` |
-| `POST /api/auth/logout` | Revoca el token actual |
-| `POST /api/auth/forgot-password` | Envía correo de restablecimiento (respuesta 200 aunque el email no exista) |
-| `POST /api/auth/reset-password` | `{ email, token, password, password_confirmation }` |
-| `GET /api/me` · `PATCH /api/me` | Perfil y preferencias (`timezone`, `week_starts_on`, `default_view`) |
-| `GET/POST /api/categories` · `PATCH/DELETE /api/categories/{id}` | Categorías del usuario |
-| `GET /api/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD` | Tareas **ya expandidas** (recurrencias + excepciones) en el rango; lo usan Semana y Mes |
-| `GET /api/stats/days?year=2026` | `{ "2026-10-15": 4, … }` número de tareas por día, para el mapa de calor de Año |
-| `POST /api/tasks` · `GET/PATCH/DELETE /api/tasks/{id}` | CRUD de la tarea "plantilla" |
-| `PUT /api/tasks/{id}/occurrences/{date}` | `{ is_completed?, is_skipped? }` sobre una ocurrencia de una tarea recurrente |
+| `POST /api/auth/register` | `{ name, email, password, password_confirmation, timezone?, device_name? }` → **201** `{ user, token }`. Crea las 4 categorías por defecto. Límite 10/min |
+| `POST /api/auth/login` | `{ email, password, device_name? }` → `{ user, token }`. Límite 5/min por email + IP |
+| `POST /api/auth/logout` | Revoca el token actual → 204 |
+| `POST /api/auth/forgot-password` | `{ email }` → 200 `{ message }` aunque el email no exista. El correo enlaza a `FRONTEND_URL/reset-password?token=…&email=…`. Límite 5/min |
+| `POST /api/auth/reset-password` | `{ email, token, password, password_confirmation }` → 200 `{ message }`; revoca todos los tokens del usuario |
+| `GET /api/me` · `PATCH /api/me` | Perfil `{ id, name, email, timezone, week_starts_on, default_view, created_at }`; PATCH acepta `name`, `timezone`, `week_starts_on`, `default_view` |
+| `GET/POST /api/categories` · `PATCH/DELETE /api/categories/{id}` | `{ id, name, color, position }`, ordenadas por `position`. Al borrar, sus tareas quedan sin categoría |
+| `GET /api/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD` | Tareas **ya expandidas** (recurrencias + excepciones) en el rango, máx. 400 días: `[{ task_id, date, start_time, end_time, title, notes, category_id, is_completed, is_recurring }]`; lo usan Semana y Mes |
+| `GET /api/stats/days?year=2026` | `{ "2026-10-15": 4, … }` número de tareas por día (solo días con tareas; `{}` si no hay), para el mapa de calor de Año |
+| `POST /api/tasks` · `GET/PATCH/DELETE /api/tasks/{id}` | CRUD de la tarea "plantilla" `{ id, category_id, title, notes, task_date, start_time, end_time, is_completed, completed_at, recurrence, recurrence_days, recurrence_until, created_at, updated_at }`. PATCH valida contra los valores actuales |
+| `PUT /api/tasks/{id}/occurrences/{date}` | `{ is_completed?, is_skipped? }` sobre una ocurrencia de una tarea recurrente → `{ task_id, date, is_completed, is_skipped }`. 404 si la tarea no cae ese día, 422 si no es recurrente |
 
-Errores de validación: formato estándar de Laravel (422 con `message` y `errors`).
+Errores de validación: formato estándar de Laravel (422 con `message` y `errors`), mensajes en español (`backend/lang/es`).
+Recurso inexistente o de otro usuario: 404 `{ "message": "No encontrado." }`. Sin token: 401.
 
 ## Comandos habituales
 
 ```bash
 # Backend
 cd backend && php artisan serve          # API en http://localhost:8000
-cd backend && php artisan test           # tests (Pest o PHPUnit)
+cd backend && php artisan test           # tests (PHPUnit, contra la BD planificador_test)
 cd backend && php artisan migrate:fresh --seed
 cd backend && ./vendor/bin/pint          # formateo
 
@@ -84,7 +86,6 @@ cd backend && ./vendor/bin/pint          # formateo
 cd frontend && npm run dev               # http://localhost:5173
 cd frontend && npm run build
 cd frontend && npm run type-check
-cd frontend && npm run lint
 cd frontend && npm run test              # Vitest
 ```
 

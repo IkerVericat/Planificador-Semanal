@@ -1,0 +1,57 @@
+<?php
+
+// Solo las reglas que usa la API; el resto cae en el inglés del framework (fallback_locale).
+return [
+    'after' => 'El campo :attribute debe ser posterior a :date.',
+    'after_or_equal' => 'El campo :attribute debe ser igual o posterior a :date.',
+    'array' => 'El campo :attribute debe ser una lista.',
+    'between' => [
+        'numeric' => 'El campo :attribute debe estar entre :min y :max.',
+        'string' => 'El campo :attribute debe tener entre :min y :max caracteres.',
+    ],
+    'boolean' => 'El campo :attribute debe ser verdadero o falso.',
+    'confirmed' => 'La confirmación de :attribute no coincide.',
+    'date_format' => 'El campo :attribute debe tener el formato :format.',
+    'distinct' => 'El campo :attribute tiene un valor repetido.',
+    'email' => 'El campo :attribute debe ser un correo electrónico válido.',
+    'exists' => 'El valor de :attribute no es válido.',
+    'in' => 'El valor de :attribute no es válido.',
+    'integer' => 'El campo :attribute debe ser un número entero.',
+    'max' => [
+        'string' => 'El campo :attribute no puede tener más de :max caracteres.',
+    ],
+    'min' => [
+        'string' => 'El campo :attribute debe tener al menos :min caracteres.',
+    ],
+    'regex' => 'El formato de :attribute no es válido.',
+    'required' => 'El campo :attribute es obligatorio.',
+    'required_with' => 'El campo :attribute es obligatorio cuando hay :values.',
+    'string' => 'El campo :attribute debe ser un texto.',
+    'timezone' => 'El campo :attribute debe ser una zona horaria válida.',
+    'unique' => 'Ya existe un registro con ese :attribute.',
+    'uuid' => 'El campo :attribute debe ser un UUID válido.',
+
+    'attributes' => [
+        'name' => 'nombre',
+        'email' => 'correo electrónico',
+        'password' => 'contraseña',
+        'timezone' => 'zona horaria',
+        'week_starts_on' => 'primer día de la semana',
+        'default_view' => 'vista por defecto',
+        'color' => 'color',
+        'position' => 'posición',
+        'title' => 'título',
+        'notes' => 'notas',
+        'task_date' => 'fecha',
+        'start_time' => 'hora de inicio',
+        'end_time' => 'hora de fin',
+        'category_id' => 'categoría',
+        'recurrence' => 'repetición',
+        'recurrence_days' => 'días de la semana',
+        'recurrence_days.*' => 'día de la semana',
+        'recurrence_until' => 'fin de la repetición',
+        'from' => 'desde',
+        'to' => 'hasta',
+        'year' => 'año',
+    ],
+];
