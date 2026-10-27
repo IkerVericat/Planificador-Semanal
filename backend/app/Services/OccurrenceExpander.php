@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
  * aplicando las excepciones (saltada / completada ese día) de task_exceptions.
  *
  * @phpstan-type Occurrence array{
- *     task_id: string, date: string, start_time: string|null, end_time: string|null,
+ *     task_id: string, date: string, original_date: string, start_time: string|null, end_time: string|null,
  *     title: string, notes: string|null, category_id: string|null,
  *     is_completed: bool, is_recurring: bool
  * }
@@ -25,62 +25,97 @@ class OccurrenceExpander
 
     /**
      * Ocurrencias ordenadas por fecha y hora (las de todo el día primero).
+     * Las ocurrencias movidas aparecen en su nuevo día (date) y conservan su fecha original (original_date).
      *
      * @return list<Occurrence>
      */
     public function forUser(User $user, CarbonImmutable $from, CarbonImmutable $to): array
     {
+        $range = [$from->toDateString(), $to->toDateString()];
+
+        $exceptions = $user->taskExceptions()
+            ->where(fn (Builder $q) => $q
+                ->whereBetween('occurrence_date', $range)
+                ->orWhereBetween('moved_to_date', $range))
+            ->get();
+
+        // Ocurrencias que llegan al rango desde otro día (su día original puede quedar fuera)
+        $movedIn = $exceptions->filter(fn (TaskException $e) => ! $e->is_skipped
+            && $e->moved_to_date !== null
+            && $e->moved_to_date->betweenIncluded($from->startOfDay(), $to->startOfDay()));
+
         $tasks = $user->tasks()
-            ->where(function (Builder $query) use ($from, $to) {
+            ->where(function (Builder $query) use ($range, $movedIn) {
                 $query
                     ->where(fn (Builder $q) => $q
                         ->where('recurrence', 'none')
-                        ->whereBetween('task_date', [$from->toDateString(), $to->toDateString()]))
+                        ->whereBetween('task_date', $range))
                     ->orWhere(fn (Builder $q) => $q
                         ->where('recurrence', '<>', 'none')
-                        ->where('task_date', '<=', $to->toDateString())
+                        ->where('task_date', '<=', $range[1])
                         ->where(fn (Builder $q) => $q
                             ->whereNull('recurrence_until')
-                            ->orWhere('recurrence_until', '>=', $from->toDateString())));
+                            ->orWhere('recurrence_until', '>=', $range[0])))
+                    ->orWhereIn('id', $movedIn->pluck('task_id')->unique()->values()->all());
             })
-            ->get();
-
-        $exceptions = $user->taskExceptions()
-            ->whereBetween('occurrence_date', [$from->toDateString(), $to->toDateString()])
             ->get()
-            ->keyBy(fn (TaskException $e) => $e->task_id.'|'.$e->occurrence_date->toDateString());
+            ->keyBy('id');
+
+        $byOriginalDate = $exceptions->keyBy(fn (TaskException $e) => $e->task_id.'|'.$e->occurrence_date->toDateString());
 
         $occurrences = [];
 
         foreach ($tasks as $task) {
             foreach ($this->datesFor($task, $from, $to) as $date) {
                 /** @var TaskException|null $exception */
-                $exception = $exceptions->get($task->id.'|'.$date);
+                $exception = $byOriginalDate->get($task->id.'|'.$date);
 
-                if ($exception?->is_skipped) {
+                // Saltada, o movida a otro día (se añade abajo si su nuevo día cae en el rango)
+                if ($exception?->is_skipped || $exception?->moved_to_date !== null) {
                     continue;
                 }
 
-                $occurrences[] = [
-                    'task_id' => $task->id,
-                    'date' => $date,
-                    'start_time' => self::formatTime($task->start_time),
-                    'end_time' => self::formatTime($task->end_time),
-                    'title' => $task->title,
-                    'notes' => $task->notes,
-                    'category_id' => $task->category_id,
-                    'is_completed' => $task->isRecurring()
-                        ? (bool) $exception?->is_completed
-                        : $task->is_completed,
-                    'is_recurring' => $task->isRecurring(),
-                ];
+                $occurrences[] = $this->occurrence($task, $date, $date, $exception);
             }
         }
 
-        usort($occurrences, fn (array $a, array $b) => [$a['date'], $a['start_time'] !== null, $a['start_time'], $a['title']]
-            <=> [$b['date'], $b['start_time'] !== null, $b['start_time'], $b['title']]);
+        foreach ($movedIn as $exception) {
+            $task = $tasks->get($exception->task_id);
+            $original = $exception->occurrence_date;
+
+            // Si la serie se ha editado y ya no cae en el día original, la excepción ha quedado huérfana
+            if ($task === null || $this->datesFor($task, $original, $original) === []) {
+                continue;
+            }
+
+            $occurrences[] = $this->occurrence($task, $exception->moved_to_date->toDateString(), $original->toDateString(), $exception);
+        }
+
+        usort($occurrences, fn (array $a, array $b) => [$a['date'], $a['start_time'] !== null, $a['start_time'], $a['title'], $a['original_date']]
+            <=> [$b['date'], $b['start_time'] !== null, $b['start_time'], $b['title'], $b['original_date']]);
 
         return $occurrences;
+    }
+
+    /**
+     * @return Occurrence
+     */
+    private function occurrence(Task $task, string $date, string $originalDate, ?TaskException $exception): array
+    {
+        return [
+            'task_id' => $task->id,
+            'date' => $date,
+            'original_date' => $originalDate,
+            'start_time' => self::formatTime($task->start_time),
+            'end_time' => self::formatTime($task->end_time),
+            'title' => $task->title,
+            'notes' => $task->notes,
+            'category_id' => $task->category_id,
+            'is_completed' => $task->isRecurring()
+                ? (bool) $exception?->is_completed
+                : $task->is_completed,
+            'is_recurring' => $task->isRecurring(),
+        ];
     }
 
     /**

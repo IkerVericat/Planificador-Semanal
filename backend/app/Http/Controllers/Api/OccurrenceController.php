@@ -26,7 +26,8 @@ class OccurrenceController extends Controller
     }
 
     /**
-     * Marca como completada o saltada una sola ocurrencia de una tarea recurrente.
+     * Completa, salta o mueve a otro día una sola ocurrencia de una tarea recurrente.
+     * {date} es siempre la fecha original de la ocurrencia (original_date), aunque esté movida.
      */
     public function update(UpdateOccurrenceRequest $request, string $task, string $date): JsonResponse
     {
@@ -51,9 +52,15 @@ class OccurrenceController extends Controller
 
         $exception = $task->exceptions()->firstOrNew(['occurrence_date' => $date]);
         $exception->user_id = $task->user_id;
-        $exception->fill($request->validated());
+        $data = $request->validated();
 
-        if ($exception->is_skipped || $exception->is_completed) {
+        if (($data['moved_to_date'] ?? null) === $date) {
+            $data['moved_to_date'] = null;
+        }
+
+        $exception->fill($data);
+
+        if ($exception->is_skipped || $exception->is_completed || $exception->moved_to_date !== null) {
             $exception->save();
         } elseif ($exception->exists) {
             // Sin cambios respecto a la tarea plantilla: no hace falta guardar la excepción
@@ -65,6 +72,7 @@ class OccurrenceController extends Controller
             'date' => $date,
             'is_completed' => (bool) $exception->is_completed,
             'is_skipped' => (bool) $exception->is_skipped,
+            'moved_to_date' => $exception->moved_to_date?->toDateString(),
         ]);
     }
 }

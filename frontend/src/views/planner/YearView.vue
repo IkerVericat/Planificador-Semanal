@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { addYears, isSameMonth, isToday } from 'date-fns'
+import { isSameMonth, isToday } from 'date-fns'
 import PeriodNav from '@/components/PeriodNav.vue'
 import { useAnchorDate } from '@/composables/useAnchorDate'
 import { useLoader } from '@/composables/useLoader'
@@ -11,7 +11,7 @@ import { WEEKDAY_INITIALS, formatMonthName, monthGrid, toISODate } from '@/utils
 
 const router = useRouter()
 const planner = usePlannerStore()
-const { anchor, setAnchor } = useAnchorDate()
+const { anchor, isCurrentPeriod, shift, goToday } = useAnchorDate()
 
 const year = computed(() => anchor.value.getFullYear())
 
@@ -48,28 +48,33 @@ function openMonth(date: Date): void {
       :title="String(year)"
       prev-label="Año anterior"
       next-label="Año siguiente"
-      @prev="setAnchor(addYears(anchor, -1))"
-      @next="setAnchor(addYears(anchor, 1))"
+      :show-today="!isCurrentPeriod"
+      @prev="shift(-1)"
+      @next="shift(1)"
+      @today="goToday"
     />
 
     <p v-if="error" class="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{{ error }}</p>
 
-    <ol class="mt-4 grid grid-cols-3 gap-2" :aria-busy="loading">
+    <ol class="mt-4 grid grid-cols-3 gap-2 md:grid-cols-4 md:gap-3 lg:grid-cols-6" :aria-busy="loading">
       <li v-for="month in months" :key="month.name">
         <button
           type="button"
-          class="flex h-full w-full flex-col justify-start rounded-xl border bg-white p-1.5 text-left transition hover:border-primary"
+          class="flex h-full w-full flex-col justify-start rounded-xl border bg-white p-1.5 text-left transition hover:border-primary md:p-2.5"
           :class="isSameMonth(month.date, new Date()) ? 'border-2 border-primary' : 'border-line'"
           :aria-label="`${month.name}: ver mes`"
           @click="openMonth(month.date)"
         >
           <span
-            class="mb-1 block px-0.5 text-xs font-semibold"
+            class="mb-1 block px-0.5 text-xs font-semibold md:mb-1.5 md:text-sm"
             :class="{ 'text-primary': isSameMonth(month.date, new Date()) }"
           >
             {{ month.name }}
           </span>
-          <span class="grid grid-cols-7 gap-px text-center text-[8px] leading-[13px]" aria-hidden="true">
+          <span
+            class="grid grid-cols-7 gap-px text-center text-[8px] leading-[13px] md:gap-0.5 md:text-[10px] md:leading-[18px]"
+            aria-hidden="true"
+          >
             <span v-for="initial in WEEKDAY_INITIALS" :key="initial" class="text-muted/70">{{ initial }}</span>
             <template v-for="(week, index) in month.weeks" :key="index">
               <span v-for="(day, dayIndex) in week" :key="dayIndex" class="rounded-[3px]" :class="day ? heatClass(day) : ''">
@@ -81,7 +86,7 @@ function openMonth(date: Date): void {
       </li>
     </ol>
 
-    <div class="mt-3 flex items-center gap-1.5 text-[11px] text-muted" aria-hidden="true">
+    <div class="mt-3 flex items-center gap-1.5 text-[11px] text-muted md:mt-4 md:text-xs" aria-hidden="true">
       <span>Menos</span>
       <span class="size-3 rounded-[3px] border border-line bg-white" />
       <span class="size-3 rounded-[3px] bg-heat-1" />

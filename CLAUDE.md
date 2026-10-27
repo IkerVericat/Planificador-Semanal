@@ -65,10 +65,10 @@ Los recursos se devuelven **sin envolver** en `data` (`GET /api/categories` → 
 | `POST /api/auth/reset-password` | `{ email, token, password, password_confirmation }` → 200 `{ message }`; revoca todos los tokens del usuario |
 | `GET /api/me` · `PATCH /api/me` | Perfil `{ id, name, email, timezone, week_starts_on, default_view, created_at }`; PATCH acepta `name`, `timezone`, `week_starts_on`, `default_view` |
 | `GET/POST /api/categories` · `PATCH/DELETE /api/categories/{id}` | `{ id, name, color, position }`, ordenadas por `position`. Al borrar, sus tareas quedan sin categoría |
-| `GET /api/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD` | Tareas **ya expandidas** (recurrencias + excepciones) en el rango, máx. 400 días: `[{ task_id, date, start_time, end_time, title, notes, category_id, is_completed, is_recurring }]`; lo usan Semana y Mes |
+| `GET /api/occurrences?from=YYYY-MM-DD&to=YYYY-MM-DD` | Tareas **ya expandidas** (recurrencias + excepciones) en el rango, máx. 400 días: `[{ task_id, date, original_date, start_time, end_time, title, notes, category_id, is_completed, is_recurring }]`. `date` es el día en que se muestra y `original_date` el que le toca por la repetición (distintos si se ha movido); lo usan Semana y Mes |
 | `GET /api/stats/days?year=2026` | `{ "2026-10-15": 4, … }` número de tareas por día (solo días con tareas; `{}` si no hay), para el mapa de calor de Año |
 | `POST /api/tasks` · `GET/PATCH/DELETE /api/tasks/{id}` | CRUD de la tarea "plantilla" `{ id, category_id, title, notes, task_date, start_time, end_time, is_completed, completed_at, recurrence, recurrence_days, recurrence_until, created_at, updated_at }`. PATCH valida contra los valores actuales |
-| `PUT /api/tasks/{id}/occurrences/{date}` | `{ is_completed?, is_skipped? }` sobre una ocurrencia de una tarea recurrente → `{ task_id, date, is_completed, is_skipped }`. 404 si la tarea no cae ese día, 422 si no es recurrente |
+| `PUT /api/tasks/{id}/occurrences/{date}` | `{ is_completed?, is_skipped?, moved_to_date? }` sobre una ocurrencia de una tarea recurrente; `{date}` es su `original_date`. `moved_to_date` la mueve solo a ella a otro día (`null` o la fecha original la devuelven) → `{ task_id, date, is_completed, is_skipped, moved_to_date }`. 404 si la tarea no cae ese día, 422 si no es recurrente |
 
 Errores de validación: formato estándar de Laravel (422 con `message` y `errors`), mensajes en español (`backend/lang/es`).
 Recurso inexistente o de otro usuario: 404 `{ "message": "No encontrado." }`. Sin token: 401.

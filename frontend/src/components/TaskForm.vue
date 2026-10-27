@@ -36,6 +36,8 @@ const form = reactive({
 })
 
 const task = ref<Task | null>(null)
+/** Día al que mover solo esta ocurrencia de una tarea recurrente */
+const moveDate = ref('')
 const loadingTask = ref(false)
 const saving = ref(false)
 const error = ref<ApiError | null>(null)
@@ -86,6 +88,7 @@ watch(
       resetForm(editor.date)
       return
     }
+    moveDate.value = editor.occurrence.date
     loadingTask.value = true
     try {
       task.value = await tasksApi.get(editor.occurrence.task_id)
@@ -144,16 +147,24 @@ function toggleCompleted(): Promise<void> {
 }
 
 function skipThisDay(): Promise<void> {
-  return run(() => planner.updateOccurrence(occurrence.value!, { is_skipped: true }))
+  return run(() => planner.skipOccurrence(occurrence.value!))
 }
 
+function moveThisDay(): Promise<void> {
+  return run(() => planner.moveOccurrence(occurrence.value!, moveDate.value))
+}
+
+/**
+ * Una tarea suelta se borra sin preguntar (el aviso permite deshacer). En una serie se pide
+ * confirmación porque al deshacer no se recuperan los cambios hechos a días sueltos.
+ */
 function remove(): Promise<void> {
-  const message = task.value?.recurrence !== 'none'
-    ? '¿Eliminar esta tarea y todas sus repeticiones?'
-    : '¿Eliminar esta tarea?'
-  if (!task.value || !window.confirm(message)) return Promise.resolve()
-  const id = task.value.id
-  return run(() => planner.deleteTask(id))
+  const current = task.value
+  if (!current) return Promise.resolve()
+  if (current.recurrence !== 'none' && !window.confirm('¿Eliminar esta tarea y todas sus repeticiones?')) {
+    return Promise.resolve()
+  }
+  return run(() => planner.deleteTask(current))
 }
 </script>
 
@@ -187,6 +198,21 @@ function remove(): Promise<void> {
         @click="skipThisDay"
       >
         Quitar solo este día
+      </button>
+    </div>
+
+    <div v-if="occurrence?.is_recurring" class="flex items-end gap-2">
+      <div class="min-w-0 flex-1">
+        <label class="label" for="task-move">Mover solo este día a</label>
+        <input id="task-move" v-model="moveDate" class="input" type="date" />
+      </div>
+      <button
+        type="button"
+        class="min-h-12 rounded-xl border border-line px-4 text-sm font-medium disabled:opacity-50"
+        :disabled="saving || !moveDate || moveDate === occurrence.date"
+        @click="moveThisDay"
+      >
+        Mover
       </button>
     </div>
 

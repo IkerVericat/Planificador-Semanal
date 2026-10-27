@@ -95,4 +95,89 @@ class OccurrenceTest extends TestCase
 
         $this->assertSame(0, $task->exceptions()->count());
     }
+
+    public function test_moves_a_single_occurrence_to_another_day(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->recurring('weekly', [1])->create([
+            'title' => 'Curso', 'task_date' => '2026-10-12',
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-19", ['moved_to_date' => '2026-10-21'])
+            ->assertOk()
+            ->assertJsonPath('moved_to_date', '2026-10-21');
+
+        $occurrences = collect($this->getJson('/api/occurrences?from=2026-10-12&to=2026-10-31')->json());
+
+        // El lunes 19 pasa al miércoles 21; los demás lunes siguen igual
+        $this->assertSame(
+            [['2026-10-12', '2026-10-12'], ['2026-10-21', '2026-10-19'], ['2026-10-26', '2026-10-26']],
+            $occurrences->map(fn ($o) => [$o['date'], $o['original_date']])->all(),
+        );
+    }
+
+    public function test_occurrence_moved_into_range_from_outside_appears(): void
+    {
+        $user = User::factory()->create();
+        // Empieza el lunes 19: en la semana del 12 al 18 no tendría ninguna ocurrencia
+        $task = Task::factory()->for($user)->recurring('weekly', [1])->create(['task_date' => '2026-10-19']);
+        Sanctum::actingAs($user);
+
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-19", ['moved_to_date' => '2026-10-16'])->assertOk();
+
+        $this->getJson('/api/occurrences?from=2026-10-12&to=2026-10-18')
+            ->assertOk()
+            ->assertJsonCount(1)
+            ->assertJsonPath('0.date', '2026-10-16')
+            ->assertJsonPath('0.original_date', '2026-10-19');
+        $this->getJson('/api/occurrences?from=2026-10-19&to=2026-10-25')->assertJsonCount(0);
+        $this->getJson('/api/stats/days?year=2026')->assertJsonPath('2026-10-16', 1);
+    }
+
+    public function test_moved_occurrence_keeps_completion_and_can_go_back(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->recurring('daily')->create(['task_date' => '2026-10-12']);
+        Sanctum::actingAs($user);
+
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-13", ['moved_to_date' => '2026-10-20']);
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-13", ['is_completed' => true]);
+
+        $this->getJson('/api/occurrences?from=2026-10-20&to=2026-10-20')
+            ->assertJsonPath('0.original_date', '2026-10-13')
+            ->assertJsonPath('0.is_completed', true)
+            ->assertJsonPath('1.original_date', '2026-10-20');
+
+        // Devolverla a su día original (o a null) deja solo la marca de completada
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-13", ['moved_to_date' => '2026-10-13'])
+            ->assertOk()
+            ->assertJsonPath('moved_to_date', null);
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-13", ['is_completed' => false]);
+
+        $this->assertSame(0, $task->exceptions()->count());
+    }
+
+    public function test_skipped_occurrence_is_not_shown_even_if_moved(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->recurring('daily')->create(['task_date' => '2026-10-12']);
+        Sanctum::actingAs($user);
+
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-13", ['moved_to_date' => '2026-10-20', 'is_skipped' => true]);
+
+        $this->getJson('/api/occurrences?from=2026-10-20&to=2026-10-20')->assertJsonCount(1);
+        $this->getJson('/api/occurrences?from=2026-10-13&to=2026-10-13')->assertJsonCount(0);
+    }
+
+    public function test_validates_moved_to_date(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->recurring('daily')->create(['task_date' => '2026-10-12']);
+        Sanctum::actingAs($user);
+
+        $this->putJson("/api/tasks/{$task->id}/occurrences/2026-10-13", ['moved_to_date' => 'mañana'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('moved_to_date');
+    }
 }

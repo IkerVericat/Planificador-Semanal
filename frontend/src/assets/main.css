@@ -59,14 +59,40 @@
 }
 .sheet-enter-active,
 .sheet-leave-active {
-  transition: transform 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 .sheet-enter-from,
 .sheet-leave-to {
   transform: translateY(100%);
 }
 
+/* En tablet y ordenador la hoja es una ventana centrada: aparece con un ligero zoom */
+@media (width >= 48rem) {
+  .sheet-enter-from,
+  .sheet-leave-to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* Aviso de deshacer (UndoToast) */
+.toast-enter-active,
+.toast-leave-active {
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(0.75rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .toast-enter-active,
+  .toast-leave-active,
   .fade-enter-active,
   .fade-leave-active,
   .sheet-enter-active,

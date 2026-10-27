@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Cambio sobre una única ocurrencia de una tarea recurrente (saltarla o completarla ese día).
+ * Cambio sobre una única ocurrencia de una tarea recurrente: saltarla, completarla
+ * o moverla a otro día (moved_to_date) sin tocar el resto de la serie.
  */
-#[Fillable(['occurrence_date', 'is_skipped', 'is_completed'])]
+#[Fillable(['occurrence_date', 'moved_to_date', 'is_skipped', 'is_completed'])]
 class TaskException extends Model
 {
     use HasUuids;
@@ -26,6 +27,7 @@ class TaskException extends Model
     {
         return [
             'occurrence_date' => 'immutable_date',
+            'moved_to_date' => 'immutable_date',
             'is_skipped' => 'boolean',
             'is_completed' => 'boolean',
         ];

@@ -21,6 +21,14 @@ const VIEW_OPTIONS: { value: ViewName; label: string }[] = [
   { value: 'year', label: 'Año' },
 ]
 
+const SHORTCUTS: [string[], string][] = [
+  [['N'], 'Nueva tarea'],
+  [['←', '→'], 'Periodo anterior / siguiente'],
+  [['T'], 'Volver a hoy'],
+  [['1', '2', '3'], 'Semana / Mes / Año'],
+  [['Ctrl', 'Z'], 'Deshacer el último cambio'],
+]
+
 const defaultView = computed<ViewName>({
   get: () => auth.user?.default_view ?? 'week',
   set: async (value) => {
@@ -59,6 +67,23 @@ async function logout(): Promise<void> {
         <p id="default-view-label" class="label">Vista al abrir la app</p>
         <SegmentedControl v-model="defaultView" :options="VIEW_OPTIONS" label="Vista al abrir la app" />
         <p v-if="error" class="field-error" role="alert">{{ error }}</p>
+      </div>
+
+      <div class="hidden lg:block">
+        <p class="label">Atajos de teclado</p>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+          <template v-for="[keys, action] in SHORTCUTS" :key="action">
+            <dt>
+              <kbd
+                v-for="key in keys"
+                :key="key"
+                class="mr-1 inline-flex min-w-6 justify-center rounded-md border border-line bg-surface px-1.5 font-sans text-xs"
+                >{{ key }}</kbd
+              >
+            </dt>
+            <dd class="text-muted">{{ action }}</dd>
+          </template>
+        </dl>
       </div>
 
       <button

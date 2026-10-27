@@ -92,7 +92,10 @@ export interface TaskPayload {
 /** Una tarea en un día concreto, con recurrencias y excepciones ya aplicadas (GET /api/occurrences) */
 export interface Occurrence {
   task_id: string
+  /** Día en el que se muestra (puede ser distinto del original si se ha movido) */
   date: string
+  /** Día que le corresponde según la repetición; es el {date} de PUT /tasks/{id}/occurrences/{date} */
+  original_date: string
   start_time: string | null
   end_time: string | null
   title: string
@@ -105,6 +108,8 @@ export interface Occurrence {
 export interface OccurrencePayload {
   is_completed?: boolean
   is_skipped?: boolean
+  /** Mueve solo esta ocurrencia a otro día; null la devuelve a su día */
+  moved_to_date?: string | null
 }
 
 export interface OccurrenceState {
@@ -112,6 +117,7 @@ export interface OccurrenceState {
   date: string
   is_completed: boolean
   is_skipped: boolean
+  moved_to_date: string | null
 }
 
 /** { "2026-10-15": 4, … } solo con los días que tienen tareas (GET /api/stats/days) */
