@@ -30,7 +30,7 @@ const months = computed(() =>
 
 /** Intensidad del mapa de calor: 0, 1–2 o 3+ tareas */
 function heatClass(day: Date): string {
-  if (isToday(day)) return 'bg-primary font-semibold text-white'
+  if (isToday(day)) return 'bg-primary font-semibold text-on-primary'
   const count = stats.value[toISODate(day)] ?? 0
   if (count >= 3) return 'bg-heat-2 font-semibold'
   if (count >= 1) return 'bg-heat-1'
@@ -60,7 +60,7 @@ function openMonth(date: Date): void {
       <li v-for="month in months" :key="month.name">
         <button
           type="button"
-          class="flex h-full w-full flex-col justify-start rounded-xl border bg-white p-1.5 text-left transition hover:border-primary md:p-2.5"
+          class="flex h-full w-full flex-col justify-start rounded-xl border bg-card p-1.5 text-left transition hover:border-primary md:p-2.5"
           :class="isSameMonth(month.date, new Date()) ? 'border-2 border-primary' : 'border-line'"
           :aria-label="`${month.name}: ver mes`"
           @click="openMonth(month.date)"
@@ -88,7 +88,7 @@ function openMonth(date: Date): void {
 
     <div class="mt-3 flex items-center gap-1.5 text-[11px] text-muted md:mt-4 md:text-xs" aria-hidden="true">
       <span>Menos</span>
-      <span class="size-3 rounded-[3px] border border-line bg-white" />
+      <span class="size-3 rounded-[3px] border border-line bg-card" />
       <span class="size-3 rounded-[3px] bg-heat-1" />
       <span class="size-3 rounded-[3px] bg-heat-2" />
       <span>Más tareas</span>

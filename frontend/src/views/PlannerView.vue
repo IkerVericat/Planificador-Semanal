@@ -98,7 +98,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeyDown))
       />
       <button
         type="button"
-        class="order-4 hidden h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-white transition hover:bg-primary-dark lg:order-3 lg:flex"
+        class="order-4 hidden h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-on-primary transition hover:bg-primary-dark lg:order-3 lg:flex"
         title="Nueva tarea (N)"
         aria-keyshortcuts="N"
         @click="planner.openCreate(toISODate(anchor))"

@@ -20,18 +20,21 @@ Lee primero el `CLAUDE.md` de la raíz y **mira `docs/mockup.png`** antes de con
 ## Diseño (mobile first y responsive)
 
 - Diseña primero para 375 px de ancho (el mockup) y amplía con los prefijos de Tailwind: `md:` (tablet, ≥ 768 px) y `lg:` (ordenador, ≥ 1024 px).
-- Ancho del contenido: `max-w-md` en móvil, `md:max-w-3xl`, `lg:max-w-6xl`. Las pantallas de acceso son una tarjeta blanca centrada desde `md:`.
+- Ancho del contenido: `max-w-md` en móvil, `md:max-w-3xl`, `lg:max-w-6xl`. Las pantallas de acceso son una tarjeta (`card`) centrada desde `md:`.
 - En ordenador:
   - Cabecera en una fila: título, selector Semana / Mes / Año, botón "+ Nueva tarea" y perfil. El FAB solo existe por debajo de `lg:`.
   - Semana: los 7 días en columnas (`lg:grid-cols-7`); en tablet, 2 columnas. En las columnas, `TaskRow` lleva `stack-on-desktop`: un solo bloque con la hora encima del título.
   - Mes: calendario a la izquierda y lista del día seleccionado a la derecha.
   - Año: 4 columnas de minicalendarios en tablet y 6 en ordenador.
   - La hoja inferior (`BottomSheet`) se convierte en una ventana centrada desde `md:`.
-- Fuente: Inter. Fondo general gris azulado muy claro (`#F5F6FB`), tarjetas blancas con `rounded-2xl` y borde sutil.
-- Color primario (botones, día seleccionado, FAB, enlaces): índigo `#4B4BD8` aprox. → define `primary` en `tailwind.config`.
+- Fuente: Inter. Paleta **crema / oscuros**, definida como tokens en `@theme` de `src/assets/main.css` (no escribas colores a mano en los componentes; usa los tokens):
+  - Fondo general crema `surface` (`#F4EFE6`); tarjetas, campos y hojas marfil `card` (`#FBF8F2`) con `rounded-2xl` y borde `line`.
+  - Color primario (botones, día de hoy/seleccionado, FAB, enlaces, foco): carbón cálido `primary` (`#2B2824`), con texto crema `on-primary` encima. `primary-soft` (arena) para fondos suaves y la pista del control segmentado; `accent` para el "Deshacer" sobre fondo oscuro.
+  - Texto `ink` y secundario `muted`; mapa de calor `heat-1` / `heat-2`.
+  - El `theme-color` de `index.html` y del manifest PWA es el crema del fondo.
 - Colores de categoría (vienen de la API, pero estos son los de por defecto): Fijo `#C9CDF2`, Urgente `#EB775A`, Importante `#8DC63F`, Nueva `#F4B942`. El texto encima es oscuro.
 - Fila de tarea (`TaskRow`): bloque pequeño con la hora (`9 AM`, `7:30 PM`) + bloque ancho con el título en MAYÚSCULAS y negrita, ambos del color de la categoría, `rounded-lg`.
-- Selector Semana / Mes / Año: control segmentado sobre fondo gris, la opción activa en blanco con sombra.
+- Selector Semana / Mes / Año: control segmentado sobre `primary-soft`, la opción activa en `card` con sombra.
 - Navegación de periodo: botones `‹` `›` circulares con el título en medio (`12 – 18 de octubre`, `Octubre 2026`, `2026`).
 - Mes: puntos de color por categoría bajo cada día; al tocar un día se muestra su lista debajo.
 - Año: 12 minicalendarios en 3 columnas; intensidad del día según número de tareas (0, 1–2, 3+), leyenda "Menos … Más tareas"; mes actual con borde primario. Tocar un mes abre la vista Mes.

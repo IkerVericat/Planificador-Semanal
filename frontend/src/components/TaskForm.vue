@@ -227,7 +227,7 @@ function remove(): Promise<void> {
       <button
         type="button"
         class="min-h-11 flex-1 rounded-xl border border-line px-3 text-sm font-medium"
-        :class="occurrence.is_completed ? 'bg-white' : 'bg-primary-soft text-primary'"
+        :class="occurrence.is_completed ? 'bg-card' : 'bg-primary-soft text-primary'"
         :disabled="saving"
         @click="toggleCompleted"
       >
@@ -330,7 +330,7 @@ function remove(): Promise<void> {
           class="flex size-11 items-center justify-center rounded-full text-sm font-semibold transition"
           :class="
             selectedDays.includes((index + 1) as IsoWeekday)
-              ? 'bg-primary text-white'
+              ? 'bg-primary text-on-primary'
               : 'bg-surface text-muted hover:bg-primary-soft hover:text-primary'
           "
           :aria-pressed="selectedDays.includes((index + 1) as IsoWeekday)"

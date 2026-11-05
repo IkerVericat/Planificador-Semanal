@@ -41,7 +41,7 @@ onBeforeUnmount(() => {
         aria-modal="true"
         :aria-labelledby="titleId"
         tabindex="-1"
-        class="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92dvh] max-w-md overflow-y-auto rounded-t-3xl bg-white px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl focus:outline-none md:inset-y-0 md:my-auto md:h-fit md:max-h-[85dvh] md:max-w-lg md:rounded-3xl md:px-6 md:pb-6 md:pt-5"
+        class="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92dvh] max-w-md overflow-y-auto rounded-t-3xl bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl focus:outline-none md:inset-y-0 md:my-auto md:h-fit md:max-h-[85dvh] md:max-w-lg md:rounded-3xl md:px-6 md:pb-6 md:pt-5"
         @keydown.esc="emit('close')"
       >
         <!-- En tablet y ordenador es una ventana centrada: sin asa de arrastre -->

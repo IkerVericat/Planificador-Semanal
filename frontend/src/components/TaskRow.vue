@@ -108,7 +108,7 @@ function onPointerDown(event: PointerEvent): void {
         class="flex size-5 items-center justify-center rounded-full border-2 transition"
         :class="
           occurrence.is_completed
-            ? 'border-transparent bg-ink/75 text-white'
+            ? 'border-transparent bg-ink/75 text-on-primary'
             : 'border-ink/35 bg-white/50 text-transparent group-hover:border-ink/60 group-hover:text-ink/50'
         "
       >

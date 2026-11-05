@@ -8,7 +8,7 @@ const emit = defineEmits<{ click: [] }>()
 <template>
   <button
     type="button"
-    class="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-[max(1.25rem,calc(50vw-14rem+1.25rem))] md:right-[max(1.5rem,calc(50vw-24rem+1.5rem))] z-30 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 transition hover:bg-primary-dark active:scale-95"
+    class="fixed bottom-[max(1.5rem,env(safe-area-inset-bottom))] right-[max(1.25rem,calc(50vw-14rem+1.25rem))] md:right-[max(1.5rem,calc(50vw-24rem+1.5rem))] z-30 flex size-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg shadow-primary/30 transition hover:bg-primary-dark active:scale-95"
     :aria-label="label"
     @click="emit('click')"
   >

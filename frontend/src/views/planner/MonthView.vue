@@ -62,7 +62,7 @@ function dayLabel(day: Date): string {
 
     <!-- Ordenador: calendario a la izquierda y lista del día a la derecha -->
     <div class="lg:mt-4 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-6">
-      <div class="mt-4 rounded-2xl border border-line bg-white px-2 pb-2 pt-3 md:px-3 lg:mt-0" :aria-busy="loading">
+      <div class="mt-4 rounded-2xl border border-line bg-card px-2 pb-2 pt-3 md:px-3 lg:mt-0" :aria-busy="loading">
         <table class="w-full table-fixed border-separate border-spacing-y-1" role="grid" :aria-label="formatMonthYear(selected)">
           <thead>
             <tr>
@@ -82,7 +82,7 @@ function dayLabel(day: Date): string {
                     isDropTarget(toISODate(day))
                       ? 'bg-primary-soft font-semibold text-primary ring-2 ring-primary'
                       : isSameDay(day, selected)
-                        ? 'bg-primary font-semibold text-white'
+                        ? 'bg-primary font-semibold text-on-primary'
                         : isToday(day)
                           ? 'font-bold text-primary hover:bg-primary-soft'
                           : 'text-ink hover:bg-surface'
@@ -109,7 +109,7 @@ function dayLabel(day: Date): string {
       </div>
 
       <section
-        class="mt-4 lg:sticky lg:top-6 lg:mt-0 lg:rounded-2xl lg:border lg:border-line lg:bg-white lg:p-4"
+        class="mt-4 lg:sticky lg:top-6 lg:mt-0 lg:rounded-2xl lg:border lg:border-line lg:bg-card lg:p-4"
         aria-live="polite"
       >
         <header class="mb-3 flex items-baseline justify-between">

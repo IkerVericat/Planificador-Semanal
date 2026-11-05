@@ -15,7 +15,7 @@ const emit = defineEmits<{ prev: []; next: []; today: [] }>()
   <nav class="flex items-center justify-between gap-2">
     <button
       type="button"
-      class="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink transition hover:bg-primary-soft"
+      class="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-card text-ink transition hover:bg-primary-soft"
       :aria-label="prevLabel"
       :title="`${prevLabel} (←)`"
       aria-keyshortcuts="ArrowLeft"
@@ -42,7 +42,7 @@ const emit = defineEmits<{ prev: []; next: []; today: [] }>()
 
     <button
       type="button"
-      class="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink transition hover:bg-primary-soft"
+      class="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-card text-ink transition hover:bg-primary-soft"
       :aria-label="nextLabel"
       :title="`${nextLabel} (→)`"
       aria-keyshortcuts="ArrowRight"

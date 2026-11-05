@@ -30,13 +30,13 @@ onBeforeUnmount(() => window.clearTimeout(timer))
       <div
         v-if="planner.toast"
         :key="planner.toast.id"
-        class="pointer-events-auto flex min-h-12 max-w-md items-center gap-3 rounded-xl bg-ink py-1.5 pl-4 pr-1.5 text-sm text-white shadow-lg"
+        class="pointer-events-auto flex min-h-12 max-w-md items-center gap-3 rounded-xl bg-ink py-1.5 pl-4 pr-1.5 text-sm text-on-primary shadow-lg"
       >
         <span>{{ planner.toast.message }}</span>
         <button
           v-if="planner.toast.undo"
           type="button"
-          class="min-h-9 rounded-lg px-3 font-semibold text-[#B9B9FF] hover:bg-white/10 disabled:opacity-60"
+          class="min-h-9 rounded-lg px-3 font-semibold text-accent hover:bg-white/10 disabled:opacity-60"
           :disabled="planner.undoing"
           title="Deshacer (Ctrl+Z)"
           aria-keyshortcuts="Control+Z Meta+Z"
@@ -47,7 +47,7 @@ onBeforeUnmount(() => window.clearTimeout(timer))
         <button
           v-else
           type="button"
-          class="flex size-9 items-center justify-center rounded-lg text-white/70 hover:bg-white/10"
+          class="flex size-9 items-center justify-center rounded-lg text-on-primary/70 hover:bg-white/10"
           aria-label="Cerrar aviso"
           @click="planner.dismissToast(planner.toast.id)"
         >

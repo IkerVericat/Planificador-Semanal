@@ -8,7 +8,7 @@ defineProps<{ title: string; subtitle: string }>()
   <!-- Móvil: pantalla completa como en el mockup. Tablet y ordenador: tarjeta blanca centrada -->
   <main class="flex min-h-dvh md:items-center md:justify-center md:p-8">
     <div
-      class="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-8 pt-[max(4rem,env(safe-area-inset-top))] md:mx-0 md:min-h-0 md:rounded-3xl md:border md:border-line md:bg-white md:p-10 md:shadow-sm"
+      class="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-8 pt-[max(4rem,env(safe-area-inset-top))] md:mx-0 md:min-h-0 md:rounded-3xl md:border md:border-line md:bg-card md:p-10 md:shadow-sm"
     >
       <AppLogo />
       <h1 class="mt-6 text-[28px] font-bold leading-tight">{{ title }}</h1>

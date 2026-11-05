@@ -53,7 +53,7 @@ const { byDay, loading, error } = useOccurrences(from, to)
         v-for="day in days"
         :key="toISODate(day)"
         :data-drop-date="toISODate(day)"
-        class="rounded-2xl border bg-white p-3.5 transition-colors lg:flex lg:min-h-64 lg:flex-col lg:p-2.5"
+        class="rounded-2xl border bg-card p-3.5 transition-colors lg:flex lg:min-h-64 lg:flex-col lg:p-2.5"
         :class="
           isDropTarget(toISODate(day))
             ? 'border-primary bg-primary-soft/60 ring-2 ring-primary/30'

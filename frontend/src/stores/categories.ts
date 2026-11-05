@@ -4,7 +4,7 @@ import { categoriesApi } from '@/api'
 import type { Category } from '@/types/api'
 
 /** Color de las tareas sin categoría */
-export const NO_CATEGORY_COLOR = '#E3E5EE'
+export const NO_CATEGORY_COLOR = '#E6DFD2'
 
 export const useCategoriesStore = defineStore('categories', () => {
   const items = ref<Category[]>([])
