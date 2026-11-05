@@ -19,16 +19,46 @@ x-php-environment: &php-environment
   CACHE_STORE: database
   QUEUE_CONNECTION: database
   SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-localhost:8080}
+  # Correo (recuperar contraseña). Sin MAIL_MAILER=smtp los correos solo se escriben en el log
+  MAIL_MAILER: ${MAIL_MAILER:-log}
+  MAIL_SCHEME: ${MAIL_SCHEME:-}
+  MAIL_HOST: ${MAIL_HOST:-}
+  MAIL_PORT: ${MAIL_PORT:-587}
+  MAIL_USERNAME: ${MAIL_USERNAME:-}
+  MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-hello@example.com}
+  MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Planificador}
 
 services:
   nginx:
     build:
       context: .
       dockerfile: nginx/Dockerfile
+    # Solo desde el propio equipo (en el servidor, desde Internet se entra por Caddy)
     ports:
-      - "${NGINX_PORT:-8080}:80"
+      - "127.0.0.1:${NGINX_PORT:-8080}:80"
     depends_on:
       - php
+    restart: unless-stopped
+
+  # HTTPS en producción: certificado de Let's Encrypt automático para DOMAIN y proxy a nginx.
+  # Solo arranca con el perfil "production" (COMPOSE_PROFILES=production en el .env del servidor).
+  caddy:
+    image: caddy:2.10-alpine
+    profiles: ["production"]
+    environment:
+      DOMAIN: ${DOMAIN:-}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - nginx
     restart: unless-stopped
 
   php:
@@ -73,22 +103,8 @@ services:
       retries: 10
     restart: unless-stopped
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Define PGADMIN_PASSWORD en .env}
-      PGADMIN_CONFIG_SERVER_MODE: "True"
-    ports:
-      - "${PGADMIN_PORT:-5050}:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
-    depends_on:
-      - db
-    restart: unless-stopped
-
 volumes:
   pg_data:
-  pgadmin_data:
   storage_data:
+  caddy_data:
+  caddy_config:

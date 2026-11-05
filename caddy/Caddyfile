@@ -1,0 +1,21 @@
+# Caddy: HTTPS con Let's Encrypt (certificado y renovación automáticos) delante de nginx.
+# DOMAIN y ACME_EMAIL vienen del .env de la raíz (ver docker-compose.yml).
+{
+	email {$ACME_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+
+	reverse_proxy nginx:80
+}
+

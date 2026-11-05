@@ -25,3 +25,5 @@ pnpm-debug.log*
 # Sistema operativo y editores
 .DS_Store
 .vscode/
+# Copias de seguridad de la base de datos (scripts/backup-db.sh)
+backups/

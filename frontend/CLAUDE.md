@@ -51,4 +51,4 @@ Lee primero el `CLAUDE.md` de la raíz y **mira `docs/mockup.png`** antes de con
 
 ## Despliegue
 
-Vercel o Cloudflare Pages (por decidir): es una SPA estática (`npm run build` → `dist/`). Hace falta reescribir todas las rutas a `index.html`.
+La SPA se compila dentro de la imagen de nginx (`nginx/Dockerfile`, `npm run build-only`) y se sirve en el mismo dominio que la API, así que `VITE_API_URL` va vacío. nginx reescribe las rutas a `index.html`, cachea `/assets/` un año y sirve `index.html`, `sw.js` y el manifest con `no-cache` para que las versiones nuevas de la PWA lleguen.

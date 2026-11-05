@@ -78,6 +78,36 @@ class AuthTest extends TestCase
             ->assertTooManyRequests();
     }
 
+    public function test_login_throttle_uses_client_ip_behind_the_proxy(): void
+    {
+        $fromProxy = fn (string $clientIp) => $this
+            ->withServerVariables(['REMOTE_ADDR' => '172.18.0.5'])
+            ->withHeader('X-Forwarded-For', $clientIp);
+
+        for ($i = 0; $i < 5; $i++) {
+            $fromProxy('203.0.113.10')->postJson('/api/auth/login', ['email' => 'ana@example.com', 'password' => 'x']);
+        }
+
+        $fromProxy('203.0.113.10')->postJson('/api/auth/login', ['email' => 'ana@example.com', 'password' => 'x'])
+            ->assertTooManyRequests();
+        $fromProxy('198.51.100.20')->postJson('/api/auth/login', ['email' => 'ana@example.com', 'password' => 'x'])
+            ->assertUnprocessable();
+    }
+
+    public function test_forwarded_headers_from_public_ips_are_ignored(): void
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.99'])
+                ->withHeader('X-Forwarded-For', "198.51.100.{$i}")
+                ->postJson('/api/auth/login', ['email' => 'ana@example.com', 'password' => 'x']);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.99'])
+            ->withHeader('X-Forwarded-For', '198.51.100.50')
+            ->postJson('/api/auth/login', ['email' => 'ana@example.com', 'password' => 'x'])
+            ->assertTooManyRequests();
+    }
+
     public function test_logout_revokes_current_token(): void
     {
         $user = User::factory()->create();

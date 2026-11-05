@@ -4,3 +4,8 @@
 .git
 backend
 pgadmin
+backups
+caddy
+scripts
+docs
+docker

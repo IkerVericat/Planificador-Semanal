@@ -16,7 +16,7 @@ Lee primero el `CLAUDE.md` de la raíz (stack, reglas y contrato de la API).
 - `php artisan install:api` instala Sanctum y crea la migración `personal_access_tokens`.
 - **Cambia `$table->morphs('tokenable')` por `$table->uuidMorphs('tokenable')`** en esa migración: los usuarios tienen id UUID y la versión por defecto usa enteros.
 - Login y registro devuelven `$user->createToken($deviceName)->plainTextToken`. Logout: `$request->user()->currentAccessToken()->delete()`.
-- El frontend guarda el token y lo envía como `Authorization: Bearer`. No uses el modo SPA de Sanctum (cookies/CSRF), porque el frontend vivirá en otro dominio (Vercel / Cloudflare Pages).
+- El frontend guarda el token y lo envía como `Authorization: Bearer`. No uses el modo SPA de Sanctum (cookies/CSRF): aunque hoy web y API comparten dominio, el frontend debe poder vivir en otro.
 - `SESSION_DRIVER=array` en `.env`: la API no usa sesiones de Laravel.
 - CORS (`config/cors.php`): permite solo el origen del frontend (`FRONTEND_URL`), `supports_credentials = false`.
 - Limita intentos de login y de recuperación con `throttle` (p. ej. 5 por minuto).
@@ -62,4 +62,8 @@ Mantén igual el resto: UUID, `citext`, la FK compuesta `(user_id, category_id)`
 
 ## Despliegue (VPS de DigitalOcean)
 
-Ubuntu LTS + Nginx + PHP-FPM 8.3 + PostgreSQL. `APP_DEBUG=false`, HTTPS con Let's Encrypt, `php artisan config:cache route:cache`, `php artisan migrate --force` en cada despliegue, cola con Supervisor si se usan colas para el correo. No toques configuración de servidor sin pedirlo.
+Docker Compose en un droplet (ver `README.md`): Caddy termina HTTPS y pasa a nginx, que sirve la SPA y manda `/api` a php-fpm.
+- La imagen `production` del `Dockerfile` arranca con `entrypoint.sh`: `migrate --force` (solo el contenedor `php`, `RUN_MIGRATIONS=true`) y `php artisan optimize` si `APP_ENV=production`.
+- `bootstrap/app.php` confía en `X-Forwarded-*` solo desde IPs privadas (la red de Docker), para que `request()->ip()` sea la del usuario y los `throttle` vayan por persona. Si algún día hay otro proxy delante (p. ej. Cloudflare con la nube naranja), hay que revisar esa lista.
+- Variables de entorno: el contenedor solo ve las que declara `docker-compose.yml` (`x-php-environment`); una variable nueva en `.env` hay que añadirla también allí.
+- `APP_DEBUG=false` siempre en el servidor. No toques configuración de servidor sin pedirlo.

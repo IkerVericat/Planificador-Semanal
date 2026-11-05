@@ -13,7 +13,7 @@ Nombres de clases, variables, tablas y rutas de la API: **inglés** (`tasks`, `c
 | Base de datos | PostgreSQL 15+, una sola base de datos, `user_id` en cada tabla de datos |
 | Frontend | Vue 3 (Composition API + `<script setup>`), TypeScript, TailwindCSS, Vite |
 | Tipo de app | PWA **mobile first** (`vite-plugin-pwa`) |
-| Despliegue | Backend en VPS de DigitalOcean · Frontend en Vercel o Cloudflare Pages (por decidir) |
+| Despliegue | Todo en un droplet de DigitalOcean con Docker Compose: Caddy (HTTPS) → nginx (SPA + `/api`) → php-fpm, PostgreSQL y cola. Web y API en el **mismo dominio**. Guía en `README.md` |
 
 ## Estructura del repositorio (monorepo)
 
@@ -25,6 +25,10 @@ Nombres de clases, variables, tablas y rutas de la API: **inglés** (`tasks`, `c
 ├── docs/
 │   ├── mockup.png       ← diseño de referencia de todas las pantallas
 │   └── db/schema.sql    ← esquema de referencia de PostgreSQL
+├── caddy/Caddyfile      ← HTTPS en producción (perfil `production` de docker-compose.yml)
+├── nginx/               ← sirve la SPA compilada y pasa /api a php-fpm
+├── scripts/             ← deploy.sh y backup-db.sh (se ejecutan en el servidor)
+├── docker-compose.yml   ← producción · docker-compose.dev.yml ← añadidos de desarrollo (Vite, pgAdmin)
 └── .claude/settings.json
 ```
 

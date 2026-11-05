@@ -27,6 +27,22 @@ services:
     volumes:
       - ./docker/db/init:/docker-entrypoint-initdb.d:ro
 
+  # Solo en desarrollo. En el servidor, conéctate a la BD con un túnel SSH a 127.0.0.1:5432
+  pgadmin:
+    image: dpage/pgadmin4:9
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Define PGADMIN_PASSWORD en .env}
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - db
+    restart: unless-stopped
+
   vite:
     image: node:24-alpine
     working_dir: /app
@@ -42,5 +58,6 @@ services:
       - nginx
 
 volumes:
+  pgadmin_data:
   vendor_data:
   node_modules_data:

@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // En producción las peticiones llegan por Caddy (HTTPS) → nginx dentro de la red de Docker.
+        // Solo se confía en X-Forwarded-* si vienen de una IP privada; así request()->ip() es la del
+        // usuario (los límites de login son por persona, no globales) y las URLs salen con https.
+        $middleware->trustProxies(at: ['127.0.0.1', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']);
+
         // API sin pantallas de login en el servidor: sin token se responde 401, nunca una redirección
         $middleware->redirectGuestsTo(fn () => null);
     })
