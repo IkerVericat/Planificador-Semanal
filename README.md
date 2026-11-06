@@ -51,7 +51,7 @@ Enfocarlo como un SPA orientada a Mobile First.
 ### BACKEND I AUTENTICACIÓ
 Laravel Sanctum para los tokens API.
 
-### DESPLEGAMENT
+### DESPLIEGUE
 App Dockerizada con todos los servicios y dependencias, en un solo droplet de DigitalOcean.
 La web y la API comparten dominio (`https://dominio` y `https://dominio/api`); Caddy pone el HTTPS.
 
